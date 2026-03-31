@@ -128,6 +128,12 @@ The application uses **Microsoft SQL Server** with JPA/Hibernate.
 - ProjectTimeLog
 - AuditLog
 
+### Database Diagram
+
+The current database design is shown below.
+<img width="2788" height="2771" alt="timetracker (1)" src="https://github.com/user-attachments/assets/48f18d1c-bdbd-48c5-af94-5a6f8084a5f2" />
+
+
 ## Environment Variables
 
 Use environment variables for sensitive values instead of committing secrets into source control.
@@ -307,6 +313,4 @@ To move this project closer to production standard:
 Swagger contact currently set to:
 - **Okoh David**
 - `davidokoh2000@gmail.com`
-
-Update this section if you want the README and Swagger metadata to reflect the same owner details.
 
