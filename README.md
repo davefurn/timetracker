@@ -310,6 +310,3 @@ Swagger contact currently set to:
 
 Update this section if you want the README and Swagger metadata to reflect the same owner details.
 
-## License
-
-This project is currently for learning and portfolio development. Add a license such as **MIT** if you plan to make it publicly reusable.
