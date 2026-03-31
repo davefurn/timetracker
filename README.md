@@ -302,7 +302,7 @@ To move this project closer to production standard:
 
 ## Author
 
-**Alex Ogubuike (King Alex)**
+**Okoh David**
 
 Swagger contact currently set to:
 - **Okoh David**
