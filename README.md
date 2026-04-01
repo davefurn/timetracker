@@ -129,7 +129,7 @@ The application uses **Microsoft SQL Server** with JPA/Hibernate.
 - AuditLog
 
 ### Database Diagram
-
+https://start.spring.io/
 The current database design is shown below.
 <img width="2788" height="2771" alt="timetracker (1)" src="https://github.com/user-attachments/assets/48f18d1c-bdbd-48c5-af94-5a6f8084a5f2" />
 
