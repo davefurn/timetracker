@@ -3,14 +3,15 @@ package com.kingalex.timetracker.dto;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 @Data
 @Builder
 public class OrganizationResponse {
-    private Long id;
+    private UUID id;
     private String name;
     private String slug;
     private Boolean isActive;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

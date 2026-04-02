@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/organizations")
@@ -34,20 +35,20 @@ public class OrganizationController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrganizationResponse>> getById(
-            @PathVariable Long id) {
+            @PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.success(organizationService.getById(id)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OrganizationResponse>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody OrganizationRequest request) {
         return ResponseEntity.ok(
                 ApiResponse.success("Organization updated", organizationService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         organizationService.delete(id);
         return ResponseEntity.ok(ApiResponse.success("Organization deleted", null));
     }

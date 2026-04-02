@@ -5,13 +5,14 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
+public interface UserRoleRepository extends JpaRepository<UserRole, UUID> {
 
-    List<UserRole> findByUserId(Long userId);
-    List<UserRole> findByRoleId(Long roleId);
-    boolean existsByUserIdAndRoleId(Long userId, Long roleId);
+    List<UserRole> findByUserId(UUID userId);
+    List<UserRole> findByRoleId(UUID roleId);
+    boolean existsByUserIdAndRoleId(UUID userId, UUID roleId);
     @Transactional
-    void deleteByUserIdAndRoleId(Long userId, Long roleId);
+    void deleteByUserIdAndRoleId(UUID userId, UUID roleId);
 
 }

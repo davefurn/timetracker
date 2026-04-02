@@ -2,18 +2,18 @@ package com.kingalex.timetracker.dto;
 
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 @Data
 @Builder
 public class UserResponse {
-    private Long id;
+    private UUID id;
     private String firstName;
     private String lastName;
     private String email;
     private String phone;
     private Boolean isActive;
-    private Long organizationId;
-    private LocalDateTime createdAt;
+    private UUID organizationId;
+    private Instant createdAt;
 }

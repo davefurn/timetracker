@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,27 +29,27 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getById(
-            @PathVariable Long id) {
+            @PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.success(userService.getById(id)));
     }
 
     @GetMapping("/organization/{organizationId}")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getByOrganization(
-            @PathVariable Long organizationId) {
+            @PathVariable UUID organizationId) {
         return ResponseEntity.ok(
                 ApiResponse.success(userService.getByOrganization(organizationId)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UserRequest request) {
         return ResponseEntity.ok(
                 ApiResponse.success("User updated", userService.update(id, request)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deactivate(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deactivate(@PathVariable UUID id) {
         userService.deactivate(id);
         return ResponseEntity.ok(ApiResponse.success("User deactivated", null));
     }
@@ -59,7 +60,7 @@ public class UserController {
     }
     @PostMapping("/{userId}/roles/{roleName}")
     public ResponseEntity<ApiResponse<Void>> assignRole(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @PathVariable String roleName) {
         userService.assignRole(userId, roleName);
         return ResponseEntity.ok(
@@ -68,7 +69,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}/roles/{roleName}")
     public ResponseEntity<ApiResponse<Void>> removeRole(
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @PathVariable String roleName) {
         userService.removeRole(userId, roleName);
         return ResponseEntity.ok(
@@ -77,7 +78,7 @@ public class UserController {
 
     @GetMapping("/{userId}/roles")
     public ResponseEntity<ApiResponse<List<String>>> getUserRoles(
-            @PathVariable Long userId) {
+            @PathVariable UUID userId) {
         return ResponseEntity.ok(
                 ApiResponse.success(userService.getUserRoles(userId)));
     }

@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 
-
 @Data
 
 public class UserRequest {
@@ -25,5 +24,5 @@ public class UserRequest {
     private String password;
 
     private String phone;
-    private Long organizationId;
+    private String organizationSlug;
 }

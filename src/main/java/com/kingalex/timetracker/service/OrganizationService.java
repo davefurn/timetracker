@@ -3,11 +3,14 @@ package com.kingalex.timetracker.service;
 import com.kingalex.timetracker.domain.entity.Organization;
 import com.kingalex.timetracker.dto.OrganizationRequest;
 import com.kingalex.timetracker.dto.OrganizationResponse;
+import com.kingalex.timetracker.exception.DuplicateResourceException;
+import com.kingalex.timetracker.exception.ResourceNotFoundException;
 import com.kingalex.timetracker.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,7 +21,7 @@ public class OrganizationService {
 
     public OrganizationResponse create(OrganizationRequest request) {
         if (organizationRepository.existsBySlug(request.getSlug())) {
-            throw new RuntimeException("Slug already exists: " + request.getSlug());
+            throw new DuplicateResourceException("Organization", "slug", request.getSlug());
         }
         Organization org = Organization.builder()
                 .name(request.getName())
@@ -35,21 +38,22 @@ public class OrganizationService {
                 .collect(Collectors.toList());
     }
 
-    public OrganizationResponse getById(Long id) {
+    public OrganizationResponse getById(UUID id) {
         Organization org = organizationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Organization not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", id));
+
         return mapToResponse(org);
     }
 
-    public OrganizationResponse update(Long id, OrganizationRequest request) {
+    public OrganizationResponse update(UUID id, OrganizationRequest request) {
         Organization org = organizationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Organization not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Organization", id));
         org.setName(request.getName());
         org.setSlug(request.getSlug());
         return mapToResponse(organizationRepository.save(org));
     }
 
-    public void delete(Long id) {
+    public void delete(UUID id) {
         organizationRepository.deleteById(id);
     }
 

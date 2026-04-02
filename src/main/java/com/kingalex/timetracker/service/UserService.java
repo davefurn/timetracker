@@ -6,6 +6,8 @@ import com.kingalex.timetracker.domain.entity.User;
 import com.kingalex.timetracker.domain.entity.UserRole;
 import com.kingalex.timetracker.dto.UserRequest;
 import com.kingalex.timetracker.dto.UserResponse;
+import com.kingalex.timetracker.exception.DuplicateResourceException;
+import com.kingalex.timetracker.exception.ResourceNotFoundException;
 import com.kingalex.timetracker.repository.OrganizationRepository;
 import com.kingalex.timetracker.repository.RoleRepository;
 import com.kingalex.timetracker.repository.UserRepository;
@@ -15,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,16 +31,16 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
 
-    public void assignRole(Long userId, String roleName) {
+    public void assignRole(UUID userId, String roleName) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleName, userId));
 
         // Check if already assigned
         if (userRoleRepository.existsByUserIdAndRoleId(userId, role.getId())) {
-            throw new RuntimeException("Role already assigned to user");
+            throw new ResourceNotFoundException("Role already assigned to user" );
         }
 
         UserRole userRole = UserRole.builder()
@@ -48,14 +51,14 @@ public class UserService {
         userRoleRepository.save(userRole);
     }
 
-    public void removeRole(Long userId, String roleName) {
+    public void removeRole(UUID userId, String roleName) {
         Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found for" + roleName, userId));
 
         userRoleRepository.deleteByUserIdAndRoleId(userId, role.getId());
     }
 
-    public List<String> getUserRoles(Long userId) {
+    public List<String> getUserRoles(UUID userId) {
         return userRoleRepository.findByUserId(userId)
                 .stream()
                 .map(ur -> ur.getRole().getName())
@@ -63,10 +66,10 @@ public class UserService {
     }
     public UserResponse create(UserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("User", "email", request.getEmail());
         }
-        Organization org = organizationRepository.findById(request.getOrganizationId())
-                .orElseThrow(() -> new RuntimeException("Organization not found"));
+        Organization org = organizationRepository.findBySlug(request.getOrganizationSlug())
+                .orElseThrow(() -> new ResourceNotFoundException("Organization"+request.getOrganizationSlug()));
 
         User user = User.builder()
                 .firstName(request.getFirstName())
@@ -80,19 +83,19 @@ public class UserService {
         return mapToResponse(userRepository.save(user));
     }
 
-    public List<UserResponse> getByOrganization(Long organizationId) {
+    public List<UserResponse> getByOrganization(UUID organizationId) {
         return userRepository.findByOrganizationId(organizationId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    public UserResponse getById(Long id) {
+    public UserResponse getById(UUID id) {
         return mapToResponse(userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found")));
     }
 
-    public UserResponse update(Long id, UserRequest request) {
+    public UserResponse update(UUID id, UserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setFirstName(request.getFirstName());
@@ -101,7 +104,7 @@ public class UserService {
         return mapToResponse(userRepository.save(user));
     }
 
-    public void deactivate(Long id) {
+    public void deactivate(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setIsActive(false);

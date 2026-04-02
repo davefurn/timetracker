@@ -6,14 +6,18 @@ import com.kingalex.timetracker.domain.entity.User;
 import com.kingalex.timetracker.dto.AttendanceResponse;
 import com.kingalex.timetracker.dto.ClockInRequest;
 import com.kingalex.timetracker.dto.ClockOutRequest;
+import com.kingalex.timetracker.exception.BusinessLogicException;
+import com.kingalex.timetracker.exception.ResourceNotFoundException;
 import com.kingalex.timetracker.repository.AttendanceRecordRepository;
 import com.kingalex.timetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,15 +32,15 @@ public class AttendanceService {
         attendanceRepository.findFirstByUserIdAndStatus(
                         request.getUserId(), AttendanceStatus.OPEN)
                 .ifPresent(r -> {
-                    throw new RuntimeException("User is already clocked in");
+                    throw new BusinessLogicException("User is already clocked in");
                 });
 
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", request.getUserId()));
 
         AttendanceRecord record = AttendanceRecord.builder()
                 .user(user)
-                .clockInAt(LocalDateTime.now())
+                .clockInAt(Instant.now())
                 .status(AttendanceStatus.OPEN)
                 .notes(request.getNotes())
                 .build();
@@ -47,9 +51,9 @@ public class AttendanceService {
     public AttendanceResponse clockOut(ClockOutRequest request) {
         AttendanceRecord record = attendanceRepository
                 .findFirstByUserIdAndStatus(request.getUserId(), AttendanceStatus.OPEN)
-                .orElseThrow(() -> new RuntimeException("No active clock-in found"));
+                .orElseThrow(() -> new BusinessLogicException("No active clock-in found for this user"));
 
-        LocalDateTime clockOut = LocalDateTime.now();
+        Instant clockOut = Instant.now();
         int minutes = (int) ChronoUnit.MINUTES.between(record.getClockInAt(), clockOut);
 
         record.setClockOutAt(clockOut);
@@ -62,7 +66,7 @@ public class AttendanceService {
         return mapToResponse(attendanceRepository.save(record));
     }
 
-    public List<AttendanceResponse> getUserAttendance(Long userId) {
+    public List<AttendanceResponse> getUserAttendance(UUID userId) {
         return attendanceRepository.findByUserId(userId)
                 .stream()
                 .map(this::mapToResponse)

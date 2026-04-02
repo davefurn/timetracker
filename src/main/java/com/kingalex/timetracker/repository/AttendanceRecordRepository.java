@@ -7,16 +7,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, Long> {
-    List<AttendanceRecord> findByUserId(Long userId);
+public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, UUID> {
+    List<AttendanceRecord> findByUserId(UUID userId);
     List<AttendanceRecord> findByUserIdAndStatus(Long userId, AttendanceStatus status);
     List<AttendanceRecord> findByUserIdAndClockInAtBetween(
-            Long userId, LocalDateTime start, LocalDateTime end
+            UUID userId, LocalDateTime start, LocalDateTime end
     );
     // Find open record - employee is currently clocked in
     Optional<AttendanceRecord> findFirstByUserIdAndStatus(
-            Long userId, AttendanceStatus status
+            UUID userId, AttendanceStatus status
     );
 
 }

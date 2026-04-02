@@ -17,7 +17,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Time Tracker API")
-                        .description("SaaS Time Tracking API by King Alex")
+                        .description("SaaS Time Tracking API by Okoh David")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Okoh David")

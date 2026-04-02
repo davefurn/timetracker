@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -22,8 +23,8 @@ import java.time.LocalDateTime;
 public class UserRole {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -35,5 +36,5 @@ public class UserRole {
 
     @CreationTimestamp
     @Column(name = "assigned_at", nullable = false, updatable = false)
-    private LocalDateTime assignedAt;
+    private Instant assignedAt;
 }

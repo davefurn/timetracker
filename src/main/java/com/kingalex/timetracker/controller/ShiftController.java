@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/shifts")
@@ -28,20 +29,20 @@ public class ShiftController {
 
     @PutMapping("/{id}/publish")
     public ResponseEntity<ApiResponse<ShiftResponse>> publish(
-            @PathVariable Long id) {
+            @PathVariable UUID id) {
         return ResponseEntity.ok(
                 ApiResponse.success("Shift published", shiftService.publish(id)));
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<List<ShiftResponse>>> getUserShifts(
-            @PathVariable Long userId) {
+            @PathVariable UUID userId) {
         return ResponseEntity.ok(
                 ApiResponse.success(shiftService.getUserShifts(userId)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         shiftService.delete(id);
         return ResponseEntity.ok(ApiResponse.success("Shift deleted", null));
     }

@@ -5,13 +5,16 @@ import com.kingalex.timetracker.domain.entity.ShiftStatus;
 import com.kingalex.timetracker.domain.entity.User;
 import com.kingalex.timetracker.dto.ShiftRequest;
 import com.kingalex.timetracker.dto.ShiftResponse;
+import com.kingalex.timetracker.exception.ResourceNotFoundException;
 import com.kingalex.timetracker.repository.ShiftRepository;
 import com.kingalex.timetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +26,7 @@ public class ShiftService {
 
     public ShiftResponse create(ShiftRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->new ResourceNotFoundException("User", request.getUserId()));
 
         Shift shift = Shift.builder()
                 .user(user)
@@ -36,23 +39,23 @@ public class ShiftService {
         return mapToResponse(shiftRepository.save(shift));
     }
 
-    public ShiftResponse publish(Long shiftId) {
+    public ShiftResponse publish(UUID shiftId) {
         Shift shift = shiftRepository.findById(shiftId)
-                .orElseThrow(() -> new RuntimeException("Shift not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Shift", shiftId));
         shift.setStatus(ShiftStatus.PUBLISHED);
         shift.setIsPublished(true);
-        shift.setPublishedAt(LocalDateTime.now());
+        shift.setPublishedAt(Instant.now());
         return mapToResponse(shiftRepository.save(shift));
     }
 
-    public List<ShiftResponse> getUserShifts(Long userId) {
+    public List<ShiftResponse> getUserShifts(UUID userId) {
         return shiftRepository.findByUserId(userId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    public void delete(Long id) {
+    public void delete(UUID id) {
         shiftRepository.deleteById(id);
     }
 

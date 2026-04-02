@@ -4,17 +4,18 @@ import com.kingalex.timetracker.domain.entity.AttendanceStatus;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 @Data
 @Builder
 public class AttendanceResponse {
-    private Long id;
-    private Long userId;
-    private LocalDateTime clockInAt;
-    private LocalDateTime clockOutAt;
+    private UUID id;
+    private UUID userId;
+    private Instant clockInAt;
+    private Instant clockOutAt;
     private Integer durationMinutes;
     private AttendanceStatus status;
     private String notes;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

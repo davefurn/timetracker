@@ -5,6 +5,10 @@ import com.kingalex.timetracker.domain.entity.Role;
 import com.kingalex.timetracker.domain.entity.User;
 import com.kingalex.timetracker.domain.entity.UserRole;
 import com.kingalex.timetracker.dto.*;
+import com.kingalex.timetracker.exception.BadRequestException;
+import com.kingalex.timetracker.exception.DuplicateResourceException;
+import com.kingalex.timetracker.exception.ResourceNotFoundException;
+import com.kingalex.timetracker.exception.TokenExpiredException;
 import com.kingalex.timetracker.repository.OrganizationRepository;
 import com.kingalex.timetracker.repository.RoleRepository;
 import com.kingalex.timetracker.repository.UserRepository;
@@ -18,6 +22,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -36,14 +41,13 @@ public class AuthService {
 
     public AuthResponse register(UserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("User", "email", request.getEmail());
         }
 
         Organization org = organizationRepository
-                .findById(request.getOrganizationId())
-                .orElseThrow(() -> new RuntimeException("Organization not found"));
+                .findBySlug(request.getOrganizationSlug())
+                .orElseThrow(() -> new ResourceNotFoundException("Organization"+ request.getOrganizationSlug()));
 
-        // Generate email verification token
         String verificationToken = UUID.randomUUID().toString();
 
         User user = User.builder()
@@ -70,16 +74,12 @@ public class AuthService {
 
         userRoleRepository.save(userRole);
 
-        // TODO: Send verification email with token
-        // emailService.sendVerificationEmail(user.getEmail(), verificationToken);
-
         UserDetails userDetails =
                 userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails);
 
         return buildAuthResponse(user, token);
     }
-
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -88,7 +88,7 @@ public class AuthService {
                         request.getPassword()));
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
 
         if (!user.getIsActive()) {
             throw new RuntimeException("Account is deactivated");
@@ -101,34 +101,27 @@ public class AuthService {
         return buildAuthResponse(user, token);
     }
 
-
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Email not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
 
-        // Generate reset token valid for 1 hour
         String resetToken = UUID.randomUUID().toString();
         user.setPasswordResetToken(resetToken);
-        user.setPasswordResetExpiresAt(LocalDateTime.now().plusHours(1));
+        user.setPasswordResetExpiresAt(Instant.now().plusSeconds(3600));
         userRepository.save(user);
 
-        // TODO: Send reset email with token
-        // emailService.sendPasswordResetEmail(user.getEmail(), resetToken);
-
-        // For now log it — in production this goes via email
         System.out.println("Password reset token for "
                 + user.getEmail() + ": " + resetToken);
     }
 
-
     public void resetPassword(ResetPasswordRequest request) {
         User user = userRepository
                 .findByPasswordResetToken(request.getToken())
-                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+                .orElseThrow(() -> new BadRequestException("Invalid or expired reset token"));
 
-        // Check token hasn't expired
-        if (user.getPasswordResetExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Reset token has expired");
+        if (user.getPasswordResetExpiresAt() == null ||
+                user.getPasswordResetExpiresAt().isBefore(Instant.now())) {
+            throw new TokenExpiredException("Password reset token has expired");
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
@@ -137,61 +130,58 @@ public class AuthService {
         userRepository.save(user);
     }
 
-
     public void changePassword(String email, ChangePasswordRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
-        // Verify current password
         if (!passwordEncoder.matches(
                 request.getCurrentPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Current password is incorrect");
+            throw new BadRequestException("Current password is incorrect");
         }
 
-        // Verify new passwords match
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("New passwords do not match");
+            throw new BadRequestException("New passwords do not match");
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
 
-
     public void verifyEmail(String token) {
         User user = userRepository
                 .findByEmailVerificationToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
+                .orElseThrow(() -> new BadRequestException("Invalid email verification token"));
+
+        if (user.getEmailVerified()) {
+            throw new BadRequestException("Email is already verified");
+        }
 
         user.setEmailVerified(true);
         user.setEmailVerificationToken(null);
         userRepository.save(user);
     }
 
-
     public void resendVerification(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
         if (user.getEmailVerified()) {
-            throw new RuntimeException("Email already verified");
+            throw new BadRequestException("Email is already verified");
         }
 
         String verificationToken = UUID.randomUUID().toString();
         user.setEmailVerificationToken(verificationToken);
         userRepository.save(user);
 
-        // TODO: Send verification email
         System.out.println("Verification token for "
                 + user.getEmail() + ": " + verificationToken);
     }
-
 
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         String email = jwtService.extractEmail(request.getRefreshToken());
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
         UserDetails userDetails =
                 userDetailsService.loadUserByUsername(email);
@@ -203,7 +193,6 @@ public class AuthService {
         String newToken = jwtService.generateToken(userDetails);
         return buildAuthResponse(user, newToken);
     }
-
 
     private AuthResponse buildAuthResponse(User user, String token) {
         return AuthResponse.builder()

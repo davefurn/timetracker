@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/attendance")
@@ -36,7 +37,7 @@ public class AttendanceController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<List<AttendanceResponse>>> getUserAttendance(
-            @PathVariable Long userId) {
+            @PathVariable UUID userId) {
         return ResponseEntity.ok(
                 ApiResponse.success(attendanceService.getUserAttendance(userId)));
     }

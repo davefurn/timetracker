@@ -4,9 +4,8 @@ import com.kingalex.timetracker.domain.entity.NotificationType;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
-
+import java.time.Instant;
+import java.util.UUID;
 
 
 @Data
@@ -14,11 +13,11 @@ import java.time.LocalDateTime;
 
 
 public class NotificationResponse {
-    private Long id;
-    private Long userId;
+    private UUID id;
+    private UUID userId;
     private NotificationType type;
     private String title;
     private String message;
     private Boolean isRead;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

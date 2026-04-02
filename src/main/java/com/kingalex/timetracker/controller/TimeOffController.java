@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/time-off")
@@ -28,23 +29,23 @@ public class TimeOffController {
 
     @PutMapping("/{id}/approve")
     public ResponseEntity<ApiResponse<TimeOffResponse>> approve(
-            @PathVariable Long id,
-            @RequestParam Long reviewerId) {
+            @PathVariable UUID id,
+            @RequestParam UUID reviewerId) {
         return ResponseEntity.ok(
                 ApiResponse.success("Request approved", timeOffService.approve(id, reviewerId)));
     }
 
     @PutMapping("/{id}/reject")
     public ResponseEntity<ApiResponse<TimeOffResponse>> reject(
-            @PathVariable Long id,
-            @RequestParam Long reviewerId) {
+            @PathVariable UUID id,
+            @RequestParam UUID reviewerId) {
         return ResponseEntity.ok(
                 ApiResponse.success("Request rejected", timeOffService.reject(id, reviewerId)));
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<List<TimeOffResponse>>> getByUser(
-            @PathVariable Long userId) {
+            @PathVariable UUID userId) {
         return ResponseEntity.ok(ApiResponse.success(timeOffService.getByUser(userId)));
     }
 

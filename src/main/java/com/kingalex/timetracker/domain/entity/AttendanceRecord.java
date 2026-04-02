@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -23,18 +24,18 @@ import java.time.LocalDateTime;
 public class AttendanceRecord {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(name = "clock_in_at", nullable = false)
-    private LocalDateTime clockInAt;
+    private Instant clockInAt;
 
     @Column(name = "clock_out_at")
-    private LocalDateTime clockOutAt;
+    private Instant clockOutAt;
 
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
@@ -48,9 +49,9 @@ public class AttendanceRecord {
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 }

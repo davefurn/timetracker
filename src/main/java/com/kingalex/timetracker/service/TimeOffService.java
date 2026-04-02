@@ -3,13 +3,16 @@ package com.kingalex.timetracker.service;
 import com.kingalex.timetracker.domain.entity.*;
 import com.kingalex.timetracker.dto.TimeOffRequestDto;
 import com.kingalex.timetracker.dto.TimeOffResponse;
+import com.kingalex.timetracker.exception.ResourceNotFoundException;
 import com.kingalex.timetracker.repository.TimeOffRequestRepository;
 import com.kingalex.timetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,7 +24,7 @@ public class TimeOffService {
 
     public TimeOffResponse create(TimeOffRequestDto request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->new ResourceNotFoundException("User", request.getUserId()));
 
         TimeOffRequest timeOff = TimeOffRequest.builder()
                 .user(user)
@@ -35,31 +38,31 @@ public class TimeOffService {
         return mapToResponse(timeOffRepository.save(timeOff));
     }
 
-    public TimeOffResponse approve(Long id, Long reviewerId) {
+    public TimeOffResponse approve(UUID id, UUID reviewerId) {
         TimeOffRequest request = timeOffRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TimeOffRequest", id));
         User reviewer = userRepository.findById(reviewerId)
-                .orElseThrow(() -> new RuntimeException("Reviewer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", reviewerId));
 
         request.setStatus(LeaveRequestStatus.APPROVED);
         request.setReviewedBy(reviewer);
-        request.setReviewedAt(LocalDateTime.now());
+        request.setReviewedAt(Instant.now());
         return mapToResponse(timeOffRepository.save(request));
     }
 
-    public TimeOffResponse reject(Long id, Long reviewerId) {
+    public TimeOffResponse reject(UUID id, UUID reviewerId) {
         TimeOffRequest request = timeOffRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("TimeOffRequest", id));
         User reviewer = userRepository.findById(reviewerId)
-                .orElseThrow(() -> new RuntimeException("Reviewer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", reviewerId));
 
         request.setStatus(LeaveRequestStatus.REJECTED);
         request.setReviewedBy(reviewer);
-        request.setReviewedAt(LocalDateTime.now());
+        request.setReviewedAt(Instant.now());
         return mapToResponse(timeOffRepository.save(request));
     }
 
-    public List<TimeOffResponse> getByUser(Long userId) {
+    public List<TimeOffResponse> getByUser(UUID userId) {
         return timeOffRepository.findByUserId(userId)
                 .stream()
                 .map(this::mapToResponse)

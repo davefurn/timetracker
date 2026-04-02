@@ -5,14 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
-    List<AuditLog> findByOrganizationId(Long organizationId);
-    List<AuditLog> findByActorUserId(Long userId);
+public interface AuditLogRepository extends JpaRepository<AuditLog, UUID> {
+    List<AuditLog> findByOrganizationId(UUID organizationId);
+    List<AuditLog> findByActorUserId(UUID userId);
     List<AuditLog> findByOrganizationIdAndCreatedAtBetween(
-            Long organizationId, LocalDateTime start, LocalDateTime end
+            UUID organizationId, LocalDateTime start, LocalDateTime end
     );
     List<AuditLog> findByEntityTypeAndEntityId(
-            String entityType, Long entityId
+            String entityType, UUID entityId
     );
 }

@@ -3,24 +3,23 @@ package com.kingalex.timetracker.dto;
 import com.kingalex.timetracker.domain.entity.LeaveType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-
-import java.time.LocalDate;
+import java.time.Instant;
+import java.util.UUID;
 
 
 @Data
 public class TimeOffRequestDto {
     @NotNull
-    private Long userId;
+    private UUID userId;
 
     @NotNull
     private LeaveType leaveType;
 
     @NotNull
-    private LocalDate startDate;
+    private Instant startDate;
 
     @NotNull
-    private LocalDate endDate;
+    private Instant endDate;
 
     private String reason;
 }
